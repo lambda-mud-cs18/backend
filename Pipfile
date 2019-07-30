@@ -9,6 +9,8 @@ autopep8 = "*"
 [packages]
 django = "*"
 requests = "*"
+json = "*"
+random = "*"
 
 [requires]
 python_version = "3.7"
