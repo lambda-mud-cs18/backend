@@ -10,8 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
+import django_heroku
 import os
-
+from decouple import config
+import dj_database_url
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -20,10 +22,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'zv6czvq-#83^e@#*iey7*ny(utzoe@ldj_qy!qkflek=l!nc%#'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', cast=bool)
 
 ALLOWED_HOSTS = []
 
@@ -38,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "mud.apps.MudConfig",
-    "rest_framework",
+    'rest_framework',
     "corsheaders"
 ]
 
@@ -91,6 +93,7 @@ DATABASES = {
     }
 }
 
+DATABASES['default'] = dj_database_url.config(conn_max_age=600)
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -133,3 +136,6 @@ STATIC_URL = '/static/'
 
 # CORS
 CORS_ORIGIN_ALLOW_ALL = True
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')

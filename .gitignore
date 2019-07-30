@@ -108,4 +108,4 @@ my_id.txt
 
 .vscode
 
-db.sqlite3
+.sqlite3
