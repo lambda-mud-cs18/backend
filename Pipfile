@@ -11,9 +11,10 @@ django = "*"
 djangorestframework = "*"
 python-decouple = "*"
 dj-database-url = "*"
-psycopg2 = "*"
 gunicorn = "*"
 django-heroku = "*"
+psycopg2-binary = "*"
+whitenoise = "*"
 
 [requires]
 python_version = "3.7"
