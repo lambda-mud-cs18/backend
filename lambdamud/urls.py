@@ -17,6 +17,8 @@ from django.urls import path, include
 from rest_framework import routers
 from django.contrib import admin
 from mud.api import PlayerViewSet
+from django.urls import path, include, re_path
+from rest_framework.authtoken import views
 
 router = routers.DefaultRouter()
 router.register(r'player', PlayerViewSet)
@@ -24,5 +26,6 @@ router.register(r'player', PlayerViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include(router.urls))
+    path('api/', include(router.urls)),
+    re_path(r'^api-token-auth/', views.obtain_auth_token)
 ]
