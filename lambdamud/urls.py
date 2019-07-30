@@ -22,6 +22,7 @@ from rest_framework.authtoken import views
 
 router = routers.DefaultRouter()
 router.register(r'player', PlayerViewSet)
+router.register(r'player/:id/go/:room', PlayerViewSet)
 router.register(r'playerinventory', PlayerInventoryViewSet)
 router.register(r'item', ItemViewSet)
 router.register(r'map', MapViewSet)

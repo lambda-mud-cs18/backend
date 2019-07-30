@@ -9,7 +9,7 @@ class PlayerSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Player
-        fields = ('playername', 'name', 'password', 'team_id', 'current_room',
+        fields = ('id', 'playername', 'name', 'password', 'team_id', 'current_room',
                   'cooldown', 'encumbrance', 'strength', 'speed', 'gold',
                   'inventory', 'status', 'errors', 'messages', 'token')
 
@@ -23,7 +23,7 @@ class PlayerInventorySerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = PlayerInventory
-        fields = ('player_id', 'item_id', 'quantity')
+        fields = ("id", 'player_id', 'item_id', 'quantity')
 
 
 class PlayerInventoryViewSet(viewsets.ModelViewSet):
@@ -35,7 +35,7 @@ class ItemSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Item
-        fields = ('name', 'description', 'weight',
+        fields = ('id', 'name', 'description', 'weight',
                   'itemtype', 'level', 'exp', 'attributes')
 
 
@@ -45,10 +45,11 @@ class ItemViewSet(viewsets.ModelViewSet):
 
 
 class MapSerializer(serializers.HyperlinkedModelSerializer):
+    id = serializers.ReadOnlyField()
 
     class Meta:
         model = Map
-        fields = ()
+        fields = ('id', 'name')
 
 
 class MapViewSet(viewsets.ModelViewSet):
