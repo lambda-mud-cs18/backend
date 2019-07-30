@@ -5,7 +5,6 @@ from uuid import uuid4
 
 
 class Player(models.Model):
-    # id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     id = models.AutoField(primary_key=True)
     playername = models.CharField(max_length=200)
     name = models.CharField(max_length=200)
@@ -32,7 +31,6 @@ class Player(models.Model):
 
 
 class PlayerInventory(models.Model):
-    # id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     id = models.AutoField(primary_key=True)
 
     player_id = models.IntegerField()
@@ -41,7 +39,6 @@ class PlayerInventory(models.Model):
 
 
 class Item(models.Model):
-    # id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     description = models.CharField(max_length=200)
@@ -56,9 +53,7 @@ class Item(models.Model):
 
 
 class Team(models.Model):
-    # id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     id = models.AutoField(primary_key=True)
-
     name = models.CharField(max_length=200)
     map_id = models.IntegerField()
 
@@ -68,16 +63,12 @@ class Team(models.Model):
 
 class Map(models.Model):
     id = models.AutoField(primary_key=True)
-    # id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    # map_id = models.IntegerField()
 
-    # def __str__(self):
-    #     return self.map_id
-    pass
+    def __str__(self):
+        return self.map_id
 
 
 class Room(models.Model):
-    # id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     id = models.AutoField(primary_key=True)
     map_id = models.IntegerField()
     room_id = models.IntegerField()

@@ -8,6 +8,14 @@ autopep8 = "*"
 
 [packages]
 django = "*"
+djangorestframework = "*"
+python-decouple = "*"
+dj-database-url = "*"
+gunicorn = "*"
+django-heroku = "*"
+psycopg2-binary = "*"
+whitenoise = "*"
+django-cors-headers = "*"
 
 [requires]
 python_version = "3.7"
