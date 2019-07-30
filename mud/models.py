@@ -119,7 +119,8 @@ class Player(models.Model):
             self.cooldown = data.get('cooldown')
             print(data.get('cooldown'))
             return data
-        
+
+
     def init(self):
         """
         Function to get the player info
@@ -229,6 +230,8 @@ class Player(models.Model):
             print("explore() cooling down for: ", self.cooldown, "seconds")
             time.sleep(self.cooldown)
             i += 1
+
+
     def go_to_room(self, room):
         """
         Function to go to a specific room.
@@ -308,6 +311,8 @@ class Player(models.Model):
                     path = v.copy()
                     path.append(neighbor)
                     q.append(path)
+
+    
     def pray(self):
         """
         Function to pray at a shrine
