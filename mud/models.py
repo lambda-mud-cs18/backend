@@ -9,13 +9,11 @@ url = "https://lambda-treasure-hunt.herokuapp.com"
 
 
 class Player(models.Model):
-    # id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     id = models.AutoField(primary_key=True)
     playername = models.CharField(max_length=200)
     name = models.CharField(max_length=200)
     password = models.CharField(max_length=200)
     team_id = models.IntegerField()
-    # current room details
     current_room = models.IntegerField()
     cooldown = models.FloatField()
     encumbrance = models.IntegerField()
@@ -32,6 +30,9 @@ class Player(models.Model):
         return self.name
 
     def sell_inventory(self):
+        """
+        Function to sell all of a players inventory
+        """
         if self.current_room is 1:
             status = self.get_status()
             inventory = status.get('inventory')
@@ -54,6 +55,7 @@ class Player(models.Model):
                 print("you have nothing in your inventory")
         else:
             print("you need to be in room 1 to sell stuff")
+            return 
         
 
     def take(self):
@@ -228,6 +230,12 @@ class Player(models.Model):
             time.sleep(self.cooldown)
             i += 1
     def go_to_room(self, room):
+        """
+        Function to go to a specific room.
+        Will stop and pick up treasure along the way.
+        Will print a list of peole in each room and any important messages.
+        Takes: Destination room
+        """
         # from mud.models import Player, Room
         # p = Player.objects.get(name = 'player85')
         # p.go_to_room(1)
@@ -245,7 +253,7 @@ class Player(models.Model):
             # Look at the exits of the current room, go if the exit is the next room on the path
             for exits in island_map[str(current_room)][1]:
                 if island_map[str(current_room)][1][exits] is next_room:
-                    print("/nTRAVELING:", exits)
+                    print("\nTRAVELING:", exits)
                     move = self.move(exits)
                     self.cooldown = move.get('cooldown')
                     print(move)
@@ -254,14 +262,15 @@ class Player(models.Model):
                     messages = move.get('messages')
                     # If there are items, GET EM!
                     if len(items) > 0:
-                        print("****************ITEMS*************")
+                        print("\n****************  ITEMS  *************")
                         print("there be items here: ", items)
+                        print("\n**************************************")
                         time.sleep(self.cooldown)
                         self.take()
 
                     # Tell me all the people in the room
                     if len(players) > 0:
-                        print("there be other players here")
+                        print("\nthere be other players here")
                         for person in players:
                             print("person:", person)
                             if person is "Pirate Ry":
@@ -269,8 +278,9 @@ class Player(models.Model):
                                 return move
                     # Temm me any important messages
                     if len(messages) > 2:
-                        print("*********IMPORTANT MESSAGES************")
+                        print("\n*********IMPORTANT MESSAGES************")
                         print(messages)
+                        print("\n**************************************")
                     
                     print("go_to_room() cooling down for: ", move.get('cooldown'), "seconds")
                     time.sleep(self.cooldown)
@@ -298,6 +308,17 @@ class Player(models.Model):
                     path = v.copy()
                     path.append(neighbor)
                     q.append(path)
+    def pray(self):
+        """
+        Function to pray at a shrine
+        https://lambda-treasure-hunt.herokuapp.com/api/adv/pray/
+        """
+        print("Praying")
+        post_data = {}
+        headers = {'content-type': 'application/json', 'Authorization': 'Token ' + self.token}
+        r = requests.post(url=url + "/api/adv/pray/", json=post_data, headers=headers)
+        data = r.json()
+        print(data)
 
 
 class PlayerInventory(models.Model):
