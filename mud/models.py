@@ -32,7 +32,6 @@ class Player(models.Model):
 
 class PlayerInventory(models.Model):
     id = models.AutoField(primary_key=True)
-
     player_id = models.IntegerField()
     item_id = models.IntegerField()
     quantity = models.IntegerField()

@@ -16,12 +16,16 @@ Including another URLconf
 from django.urls import path, include
 from rest_framework import routers
 from django.contrib import admin
-from mud.api import PlayerViewSet
+from mud.api import PlayerViewSet, PlayerInventoryViewSet, ItemViewSet, MapViewSet, RoomViewSet
 from django.urls import path, include, re_path
 from rest_framework.authtoken import views
 
 router = routers.DefaultRouter()
 router.register(r'player', PlayerViewSet)
+router.register(r'playerinventory', PlayerInventoryViewSet)
+router.register(r'item', ItemViewSet)
+router.register(r'map', MapViewSet)
+router.register(r'room', RoomViewSet)
 
 
 urlpatterns = [
