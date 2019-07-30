@@ -1,1 +1,1 @@
-web: gunicorn lambdamud.wsgi --log-file -
+web: gunicorn lambdamud.wsgi

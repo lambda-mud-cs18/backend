@@ -10,6 +10,10 @@ autopep8 = "*"
 django = "*"
 djangorestframework = "*"
 python-decouple = "*"
+dj-database-url = "*"
+psycopg2 = "*"
+gunicorn = "*"
+django-heroku = "*"
 
 [requires]
 python_version = "3.7"
