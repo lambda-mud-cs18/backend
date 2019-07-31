@@ -1,0 +1,34 @@
+[
+  {
+    "model": "mud.room",
+    "fields": {
+      "map_id": 1,
+      "room_id": 30,
+      "title": "A misty room",
+      "description": "You are standing on grass and surrounded by a dense mist. You can barely make out the exits in any direction.",
+      "coordinates": "(62,63)",
+      "elevation": 0,
+      "terrain": "NORMAL",
+      "north": "None",
+      "south": "None",
+      "east": "None",
+      "west": "None"
+    }
+  },
+  {
+    "model": "mud.room",
+    "fields": {
+      "map_id": 1,
+      "room_id": 22,
+      "title": "A misty room",
+      "description": "You are standing on grass and surrounded by a dense mist. You can barely make out the exits in any direction.",
+      "coordinates": "(62,63)",
+      "elevation": 0,
+      "terrain": "NORMAL",
+      "north": "None",
+      "south": "None",
+      "east": "None",
+      "west": "None"
+    }
+  }
+]
