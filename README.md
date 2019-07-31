@@ -10,7 +10,7 @@ Base URL: `https://lambda-mud-18.herokuapp.com`
 | POST | `/api/player/`                           | Adds user                        |
 | GET  | `/api/player/`                           | Gets all players info            |
 | GET  | `/player/:playername/go/:room_id`        | Takes player to specified room   |
-| GET  | `/api/room/:playername/unexpored`        | Takes player to unexplored rooms |
+| GET  | `/api/room/:playername/unexplored`       | Takes player to unexplored rooms |
 | GET  | `/api/room/:playername/explored/:length` | Moves player (length) times      |
 
 #### POST `/api/api-token-auth/`
