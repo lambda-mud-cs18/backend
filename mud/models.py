@@ -405,7 +405,7 @@ class Player(models.Model):
         data = r.json()
         print(data)
     
-     def unexplored(self):
+    def unexplored(self):
         # from mud.models import Player, Room
         # p = Player.objects.get(name = 'player85')
         # p.unexplored()
