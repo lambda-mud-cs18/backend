@@ -233,6 +233,7 @@ class Player(models.Model):
             players = move.get('players')
             items = move.get('items')
             messages = move.get('messages')
+            self.room_to_db( move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain') )
             # If there are items, GET EM!
             if len(items) > 0:
                 print("\n****************  ITEMS  *************")
@@ -291,7 +292,7 @@ class Player(models.Model):
                     items = move.get('items')
                     players = move.get('players')
                     messages = move.get('messages')
-                    print("move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain')", move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain'))
+                    # print("move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain')", move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain'))
                     self.room_to_db( move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain') )
                     
                     # If there are items, GET EM!
@@ -377,7 +378,8 @@ class Player(models.Model):
             "west": str(west)
         }
         print("post_data", post_data)
-        headers = {'content-type': 'application/json', 'Authorization': 'Token 982a27a7b299236b8aa9ee94ea7fa2458d64b2ee'}
+        headers = {'content-type': 'application/json',
+                   'Authorization': 'Token 982a27a7b299236b8aa9ee94ea7fa2458d64b2ee'}
         r = requests.post(url="https://lambda-mud-18.herokuapp.com/api/room/", json=post_data, headers=headers)
         data = r.json()
         print(data)
