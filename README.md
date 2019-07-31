@@ -4,14 +4,14 @@
 
 Base URL: `https://lambda-mud-18.herokuapp.com`
 
-| Type | Endpoint                               | Description                      |
-| ---- | -------------------------------------- | -------------------------------- |
-| POST | `/api-token-auth/`                     | Logs in user                     |
-| POST | `/api/player/`                         | Adds user                        |
-| GET  | `/api/player/`                         | Gets all players info            |
-| GET  | `/player/:playername/go/:room_id`      | Takes player to specified room   |
-| GET  | `/player/:playername/unexplored`       | Takes player to unexplored rooms |
-| GET  | `/player/:playername/explored/:length` | Moves player (length) times      |
+| Type | Endpoint                              | Description                      |
+| ---- | ------------------------------------- | -------------------------------- |
+| POST | `/api-token-auth/`                    | Logs in user                     |
+| POST | `/api/player/`                        | Adds user                        |
+| GET  | `/api/player/`                        | Gets all players info            |
+| GET  | `/player/:playername/go/:room_id`     | Takes player to specified room   |
+| GET  | `/player/:playername/unexplored`      | Takes player to unexplored rooms |
+| GET  | `/player/:playername/explore/:length` | Moves player (length) times      |
 
 #### POST `/api/api-token-auth/`
 

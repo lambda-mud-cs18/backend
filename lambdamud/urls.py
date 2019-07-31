@@ -39,7 +39,7 @@ urlpatterns = [
          to_room),
     path('player/<str:player>/unexplored/',
          unexplored),
-    path('player/<str:player>/explored/<int:length>/',
+    path('player/<str:player>/explore/<int:length>/',
          explore),
     re_path(r'^api-token-auth/', views.obtain_auth_token)
 ]
