@@ -6,7 +6,7 @@ Base URL: `https://lambda-mud-18.herokuapp.com`
 
 | Type | Endpoint                | Description                |
 | ---- | ----------------------- | -------------------------- |
-| POST | `/api/api-token-auth/`  | Logs in user               |
+| POST | `/api-token-auth/`      | Logs in user               |
 | POST | `/api/player/`          | Adds user                  |
 | GET  | `/api/player/`          | Gets all players info      |
 | GET  | `/api/player/:id`       | Gets player info           |

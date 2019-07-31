@@ -377,8 +377,8 @@ class Player(models.Model):
             "west": str(west)
         }
         print("post_data", post_data)
-        headers = {'content-type': 'application/json', 'Authorization': 'Token 8b29e4fe08bf78c55058667317893111180f541a'}
-        r = requests.post(url="http://127.0.0.1:8000/api/room/", json=post_data, headers=headers)
+        headers = {'content-type': 'application/json', 'Authorization': 'Token 982a27a7b299236b8aa9ee94ea7fa2458d64b2ee'}
+        r = requests.post(url="https://lambda-mud-18.herokuapp.com/api/room/", json=post_data, headers=headers)
         data = r.json()
         print(data)
 
