@@ -159,14 +159,14 @@ class Player(models.Model):
         print("current room: ", self.current_room, "direction: ", direction)
         next_room_id = Room().next_room(self.current_room, direction)
 
-        if next_room_id is not None:
-            post_data = {
-                "direction":direction,
-                "next_room_id": next_room_id
-            }
-        else:
-            print("No room in that direction")
-            return 
+        # if next_room_id is not None:
+        post_data = {
+            "direction":direction,
+            "next_room_id": next_room_id
+        }
+        # else:
+        #     print("No room in that direction")
+        #     return 
 
         headers = {'content-type': 'application/json', 'Authorization': 'Token ' + self.token}
         r = requests.post(url=url + "/api/adv/move/", json=post_data, headers=headers)
@@ -208,6 +208,7 @@ class Player(models.Model):
             # look if encumbered
             status = self.get_status()
             encumbrance = status.get('encumbrance')
+            time.sleep(status.get('cooldown'))
             if encumbrance >= 9:
                 print("/n/nEncumbered, going to sell inventory")
                 # save current room
@@ -290,6 +291,9 @@ class Player(models.Model):
                     items = move.get('items')
                     players = move.get('players')
                     messages = move.get('messages')
+                    print("move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain')", move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain'))
+                    self.room_to_db( move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain') )
+                    
                     # If there are items, GET EM!
                     if len(items) > 0:
                         print("\n****************  ITEMS  *************")
@@ -351,6 +355,34 @@ class Player(models.Model):
         r = requests.post(url=url + "/api/adv/pray/", json=post_data, headers=headers)
         data = r.json()
         print(data)
+    
+    def room_to_db(self, room_id, title, description, coordinates, elevation, terrain):
+        print("room_to_db()")
+        north = Room().next_room(room_id, 'n')
+        south = Room().next_room(room_id, 's')
+        east = Room().next_room(room_id, 'e')
+        west = Room().next_room(room_id, 'w')
+
+        post_data = {
+            "map_id": 1, 
+            "room_id": room_id,
+            "title": title,
+            "description": description,
+            "coordinates": coordinates, 
+            "elevation": elevation,
+            "terrain": terrain, 
+            "north": str(north),
+            "south": str(south),
+            "east": str(east),
+            "west": str(west)
+        }
+        print("post_data", post_data)
+        headers = {'content-type': 'application/json', 'Authorization': 'Token 8b29e4fe08bf78c55058667317893111180f541a'}
+        r = requests.post(url="http://127.0.0.1:8000/api/room/", json=post_data, headers=headers)
+        data = r.json()
+        print(data)
+
+
 
 
 class PlayerInventory(models.Model):
@@ -392,9 +424,9 @@ class Map(models.Model):
 
 
 class Room(models.Model):
-    id = models.AutoField(primary_key=True)
+    # id = models.AutoField(primary_key=True)
     map_id = models.IntegerField()
-    room_id = models.IntegerField()
+    room_id = models.IntegerField(primary_key=True)
     title = models.CharField(max_length=200)
     description = models.CharField(max_length=200)
     coordinates = models.CharField(max_length=200)
@@ -406,7 +438,7 @@ class Room(models.Model):
     west = models.CharField(max_length=200)
 
     def __str__(self):
-        return self.room_id
+        return f"{self.room_id} - {self.title} - {self.description}"
     
     def getExits(self):
         exits = []
@@ -475,7 +507,7 @@ island_map = {
     "33": [{ "x": 63, "y": 62 }, { "e": 38, "w": 31 }],
     "34": [{ "x": 62, "y": 56 }, { "n": 14, "s": 50, "e": 35 }],
     "35": [{ "x": 63, "y": 56 }, { "s": 52, "w": 34 }],
-    "36": [{ "x": 60, "y": 55 }, { "s": 48, "e": 22 }],
+    "36": [{ "x": 60, "y": 55 }, { "s": 48, "e": 22, "w": 60 }],
     "37": [{ "x": 63, "y": 57 }, { "w": 14 }],
     "38": [{ "x": 64, "y": 62 }, { "s": 59, "e": 66, "w": 33 }],
     "39": [{ "x": 63, "y": 64 }, { "n": 53, "s": 32, "e": 51, "w": 41 }],
@@ -499,7 +531,7 @@ island_map = {
     "57": [{ "x": 65, "y": 64 }, { "e": 145, "w": 51 }],
     "58": [{ "x": 58, "y": 60 }, { "s": 16, "w": 65 }],
     "59": [{ "x": 64, "y": 61 }, { "n": 38, "s": 104, "e": 92 }],
-    "60": [{ "x": 59, "y": 55 }, { "n": 45, "w": 70 }],
+    "60": [{ "x": 59, "y": 55 }, { "n": 45, "e":37 ,"w": 70 }],
     "61": [{ "x": 57, "y": 58 }, { "e": 56, "w": 171 }],
     "62": [{ "x": 58, "y": 63 }, { "n": 64, "e": 46, "w": 84 }],
     "63": [{ "x": 60, "y": 64 }, { "n": 72, "s": 20, "w": 73 }],
@@ -532,7 +564,7 @@ island_map = {
     "90": [{ "x": 66, "y": 57 }, { "e": 178, "w": 86 }],
     "91": [{ "x": 56, "y": 63 }, { "n": 180, "s": 101, "e": 84, "w": 99 }],
     "92": [{ "x": 65, "y": 61 }, { "w": 59 }],
-    "93": [{ "x": 62, "y": 53 }, { "n": 89 }],
+    "93": [{ "x": 62, "y": 53 }, { "n": 89, "w": 108}],
     "94": [{ "x": 64, "y": 66 }, { "n": 152, "s": 69 }],
     "95": [{ "x": 63, "y": 66 }, { "n": 119, "s": 53, "w": 115 }],
     "96": [{ "x": 65, "y": 56 }, { "n": 86, "e": 97 }],

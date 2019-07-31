@@ -1,3 +1,4 @@
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 import os
 from decouple import config
 import dj_database_url
@@ -16,7 +17,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', cast=bool)
 
-ALLOWED_HOSTS = ['lambda-mud-18.herokuapp.com']
+ALLOWED_HOSTS = ['lambda-mud-18.herokuapp.com', '127.0.0.1']
 
 
 # Application definition
@@ -30,13 +31,20 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "mud.apps.MudConfig",
     'rest_framework',
-    "corsheaders"
+    "corsheaders",
+    'rest_framework.authtoken'
 ]
+
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
-    ]
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
 }
 
 MIDDLEWARE = [
