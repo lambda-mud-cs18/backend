@@ -18,7 +18,7 @@ from django.contrib import admin
 from mud.api import PlayerViewSet, PlayerInventoryViewSet, ItemViewSet, MapViewSet, RoomViewSet
 from django.urls import path, include, re_path
 from rest_framework.authtoken import views
-from mud.models import Player
+from mud.models import Player, PlayerMethods
 
 router = routers.DefaultRouter()
 router.register(r'player', PlayerViewSet)
@@ -27,12 +27,19 @@ router.register(r'item', ItemViewSet)
 router.register(r'map', MapViewSet)
 router.register(r'room', RoomViewSet)
 
-p = Player.objects.get(name='player87')
-p.go_to_room(1)
+to_room = PlayerMethods.player_to_room
+unexplored = PlayerMethods.player_unexplored
+explore = PlayerMethods.player_explore
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
-    path('player/<str:player>/go/<int:room>/', p.go_to_room),
+    path('player/<str:player>/go/<int:room>/',
+         to_room),
+    path('player/<str:player>/unexplored/',
+         unexplored),
+    path('player/<str:player>/explored/<int:length>/',
+         explore),
     re_path(r'^api-token-auth/', views.obtain_auth_token)
 ]

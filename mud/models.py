@@ -272,7 +272,6 @@ class Player(models.Model):
         # p = Player.objects.get(name = 'player85')
         # p.go_to_room(1)
         print("go_to_room(): ", room)
-
         # Perform bfs to find the shortest path to the given room
         path = self.bfs(room)
         print("path: ", path)
@@ -343,6 +342,27 @@ class Player(models.Model):
                     path = v.copy()
                     path.append(neighbor)
                     q.append(path)
+    
+    def bfs_unexplored(self, destination):
+        print("bfs()")
+        self.init()
+        time.sleep(self.cooldown)
+        visited = set()
+        q = []
+        q.append([self.current_room])
+        while len(q) > 0:
+            v = q.pop()
+
+            if v[-1] in destination:
+                q = []  # Reset the Queue for next time
+                return v
+
+            elif v[-1] not in visited:
+                visited.add(v[-1])
+                for neighbor in island_map[str(v[-1])][1].values():
+                    path = v.copy()
+                    path.append(neighbor)
+                    q.append(path)
 
     
     def pray(self):
@@ -383,6 +403,34 @@ class Player(models.Model):
         r = requests.post(url="https://lambda-mud-18.herokuapp.com/api/room/", json=post_data, headers=headers)
         data = r.json()
         print(data)
+    
+    def unexplored(self):
+        # from mud.models import Player, Room
+        # p = Player.objects.get(name = 'player85')
+        # p.unexplored()
+        r = requests.get(url="https://lambda-mud-18.herokuapp.com/api/room/?format=json")
+        explored = r.json()
+
+        # Make a list of all the rooms from the server that we have explored
+        explored_list = []
+        for i in range(len(explored)):
+            explored_list.append(explored[i].get('room_id'))
+
+        # Remove the explored rooms from a list of all rooms
+        unexplored_list = list(range(500))
+        for j in explored_list:
+            unexplored_list.remove(j)
+
+        # Keep going to all the unexplored rooms
+        while len(unexplored_list) > 0:
+            # Perform a search for the closest unexplored room
+            next_room = self.bfs_unexplored(unexplored_list)
+            print("next room:", next_room[-1])
+
+            # Go to that room
+            self.go_to_room(next_room[-1])
+            unexplored_list.remove(next_room[-1])
+            print("unexplored_list", unexplored_list)
 
 
 
@@ -467,7 +515,19 @@ class Room(models.Model):
             print("room does not exist in that direction")
             return None
     
+class PlayerMethods():
 
+    def player_to_room(self, player, room):
+        p = Player.objects.get(name=player)
+        p.go_to_room(room)
+
+    def player_unexplored(self, player):
+        p = Player.objects.get(name=player)
+        p.unexplored()
+
+    def player_explore(self, player, length):
+        p = Player.objects.get(name=player)
+        p.explore(length)
 
 island_map = {
     "0": [{ "x": 60, "y": 60 }, { "n": 10, "s": 2, "e": 4, "w": 1 }],
