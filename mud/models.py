@@ -272,7 +272,6 @@ class Player(models.Model):
         # p = Player.objects.get(name = 'player85')
         # p.go_to_room(1)
         print("go_to_room(): ", room)
-
         # Perform bfs to find the shortest path to the given room
         path = self.bfs(room)
         print("path: ", path)
@@ -516,7 +515,19 @@ class Room(models.Model):
             print("room does not exist in that direction")
             return None
     
+class PlayerMethods():
 
+    def player_to_room(self, player, room):
+        p = Player.objects.get(name=player)
+        p.go_to_room(room)
+
+    def player_unexplored(self, player):
+        p = Player.objects.get(name=player)
+        p.unexplored()
+
+    def player_explore(self, player, length):
+        p = Player.objects.get(name=player)
+        p.explore(length)
 
 island_map = {
     "0": [{ "x": 60, "y": 60 }, { "n": 10, "s": 2, "e": 4, "w": 1 }],
