@@ -205,7 +205,22 @@ class Player(models.Model):
 
         i = 0
         while i < length:
-            
+            # look if encumbered
+            status = self.get_status()
+            encumbrance = status.get('encumbrance')
+            if encumbrance >= 9:
+                print("/n/nEncumbered, going to sell inventory")
+                # save current room
+                saved_room = self.current_room
+                # go to shop 
+                self.go_to_room(1)
+                # sell_inventory
+                print("Selling inventory")
+                self.sell_inventory()
+                # go back to the current room and keep exploring
+                print("/n/nNow going back to original room: ", saved_room)
+                self.go_to_room(saved_room)
+
             #  Take a random path
             random_exit = random.sample(exits, 1)
             print("random_exit", random_exit[0])
@@ -215,19 +230,31 @@ class Player(models.Model):
             exits = move.get('exits')
             items = move.get('items')
             players = move.get('players')
+            items = move.get('items')
+            messages = move.get('messages')
+            # If there are items, GET EM!
             if len(items) > 0:
-                print("****************ITEMS*************")
-                print("there be items here")
+                print("\n****************  ITEMS  *************")
+                print("there be items here: ", items)
+                print("\n**************************************")
+                time.sleep(self.cooldown)
                 self.take()
+
+            # Tell me all the people in the room
             if len(players) > 0:
-                print("there be other players here")
+                print("\nthere be other players here")
                 for person in players:
                     print("person:", person)
                     if person is "Pirate Ry":
                         print("****************PIRATE*************")
                         return move
-
-            print("explore() cooling down for: ", self.cooldown, "seconds")
+            # Temm me any important messages
+            if len(messages) > 2:
+                print("\n*********IMPORTANT MESSAGES************")
+                print(messages)
+                print("\n**************************************")
+            
+            print("explore() cooling down for: ", move.get('cooldown'), "seconds")
             time.sleep(self.cooldown)
             i += 1
 
