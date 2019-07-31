@@ -27,12 +27,12 @@ router.register(r'item', ItemViewSet)
 router.register(r'map', MapViewSet)
 router.register(r'room', RoomViewSet)
 
-p = Player.objects.get(name='player87')
-p.go_to_room(1)
+# p = Player.objects.get(name='player87')
+# p.go_to_room(1)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
-    path('player/<str:player>/go/<int:room>/', p.go_to_room),
+    # path('player/<str:player>/go/<int:room>/', p.go_to_room),
     re_path(r'^api-token-auth/', views.obtain_auth_token)
 ]
