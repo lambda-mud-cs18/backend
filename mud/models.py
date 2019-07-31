@@ -40,7 +40,7 @@ class Player(models.Model):
             time.sleep(self.cooldown)
             if inventory is not None:
                 for item in inventory:
-                    post_data = { "name":item, "confirm": "yes" }
+                    post_data = {"name": item, "confirm": "yes"}
                     print("post_data", post_data)
                     headers = {'content-type': 'application/json', 'Authorization': 'Token ' + self.token}
                     r = requests.post(url=url + "/api/adv/sell/", json=post_data, headers=headers)
@@ -55,8 +55,7 @@ class Player(models.Model):
                 print("you have nothing in your inventory")
         else:
             print("you need to be in room 1 to sell stuff")
-            return 
-        
+            return
 
     def take(self):
         """
@@ -68,13 +67,13 @@ class Player(models.Model):
         print("Grabbing items: ", items)
         time.sleep(self.cooldown)
         if items is not None:
-        # If there are multiple items in the room, pick them all up
+            # If there are multiple items in the room, pick them all up
             for item in items:
                 # API call to TAKE
                 # https://lambda-treasure-hunt.herokuapp.com/api/adv/take/
                 # { "name":"{item}" }
 
-                post_data = { "name":item }
+                post_data = {"name": item}
                 # print("post_data", post_data)
                 headers = {'content-type': 'application/json', 'Authorization': 'Token ' + self.token}
                 r = requests.post(url=url + "/api/adv/take/", json=post_data, headers=headers)
@@ -83,7 +82,6 @@ class Player(models.Model):
                 self.cooldown = data.get('cooldown')
                 print("Grab: ", item, "and cooling down for: ", self.cooldown, "seconds")
                 time.sleep(self.cooldown)
-
 
     def get_status(self):
         """
@@ -120,7 +118,6 @@ class Player(models.Model):
             print(data.get('cooldown'))
             return data
 
-
     def init(self):
         """
         Function to get the player info
@@ -148,7 +145,7 @@ class Player(models.Model):
             print("init() errors")
             self.cooldown = data.get('cooldown')
             return data
-    
+
     def move(self, direction):
         """
         Function to move a player a single space
@@ -161,12 +158,12 @@ class Player(models.Model):
 
         # if next_room_id is not None:
         post_data = {
-            "direction":direction,
+            "direction": direction,
             "next_room_id": next_room_id
         }
         # else:
         #     print("No room in that direction")
-        #     return 
+        #     return
 
         headers = {'content-type': 'application/json', 'Authorization': 'Token ' + self.token}
         r = requests.post(url=url + "/api/adv/move/", json=post_data, headers=headers)
@@ -183,6 +180,7 @@ class Player(models.Model):
             self.cooldown = data.get('cooldown')
             self.errors = data.get('errors')
             self.messages = data.get('messages')
+            self.room_to_db(data.get('room_id'), data.get('title'), data.get('description'), data.get('coordinates'), data.get('elevation'), data.get('terrain'))
 
             return data
 
@@ -213,7 +211,7 @@ class Player(models.Model):
                 print("/n/nEncumbered, going to sell inventory")
                 # save current room
                 saved_room = self.current_room
-                # go to shop 
+                # go to shop
                 self.go_to_room(1)
                 # sell_inventory
                 print("Selling inventory")
@@ -233,6 +231,9 @@ class Player(models.Model):
             players = move.get('players')
             items = move.get('items')
             messages = move.get('messages')
+
+            # Add each room to the DB while exploring
+            # self.room_to_db(move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain'))
             # If there are items, GET EM!
             if len(items) > 0:
                 print("\n****************  ITEMS  *************")
@@ -254,11 +255,10 @@ class Player(models.Model):
                 print("\n*********IMPORTANT MESSAGES************")
                 print(messages)
                 print("\n**************************************")
-            
+
             print("explore() cooling down for: ", move.get('cooldown'), "seconds")
             time.sleep(self.cooldown)
             i += 1
-
 
     def go_to_room(self, room):
         """
@@ -291,9 +291,9 @@ class Player(models.Model):
                     items = move.get('items')
                     players = move.get('players')
                     messages = move.get('messages')
-                    print("move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain')", move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain'))
-                    self.room_to_db( move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain') )
-                    
+                    # print("move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain')", move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain'))
+                    # self.room_to_db(move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain'))
+
                     # If there are items, GET EM!
                     if len(items) > 0:
                         print("\n****************  ITEMS  *************")
@@ -315,12 +315,11 @@ class Player(models.Model):
                         print("\n*********IMPORTANT MESSAGES************")
                         print(messages)
                         print("\n**************************************")
-                    
+
                     print("go_to_room() cooling down for: ", move.get('cooldown'), "seconds")
                     time.sleep(self.cooldown)
-        
-        return f"Now in room: {self.current_room}"
 
+        return f"Now in room: {self.current_room}"
 
     def bfs(self, destination):
         print("bfs()")
@@ -333,7 +332,7 @@ class Player(models.Model):
             v = q.pop()
 
             if v[-1] == destination:
-                q = [] # Reset the Queue for next time
+                q = []  # Reset the Queue for next time
                 return v
 
             elif v[-1] not in visited:
@@ -343,7 +342,27 @@ class Player(models.Model):
                     path.append(neighbor)
                     q.append(path)
 
-    
+    def bfs_unexplored(self, destination):
+        print("bfs()")
+        self.init()
+        time.sleep(self.cooldown)
+        visited = set()
+        q = []
+        q.append([self.current_room])
+        while len(q) > 0:
+            v = q.pop()
+
+            if v[-1] in destination:
+                q = []  # Reset the Queue for next time
+                return v
+
+            elif v[-1] not in visited:
+                visited.add(v[-1])
+                for neighbor in island_map[str(v[-1])][1].values():
+                    path = v.copy()
+                    path.append(neighbor)
+                    q.append(path)
+
     def pray(self):
         """
         Function to pray at a shrine
@@ -355,7 +374,7 @@ class Player(models.Model):
         r = requests.post(url=url + "/api/adv/pray/", json=post_data, headers=headers)
         data = r.json()
         print(data)
-    
+
     def room_to_db(self, room_id, title, description, coordinates, elevation, terrain):
         print("room_to_db()")
         north = Room().next_room(room_id, 'n')
@@ -364,25 +383,51 @@ class Player(models.Model):
         west = Room().next_room(room_id, 'w')
 
         post_data = {
-            "map_id": 1, 
+            "map_id": 1,
             "room_id": room_id,
             "title": title,
             "description": description,
-            "coordinates": coordinates, 
+            "coordinates": coordinates,
             "elevation": elevation,
-            "terrain": terrain, 
+            "terrain": terrain,
             "north": str(north),
             "south": str(south),
             "east": str(east),
             "west": str(west)
         }
-        print("post_data", post_data)
-        headers = {'content-type': 'application/json', 'Authorization': 'Token 8b29e4fe08bf78c55058667317893111180f541a'}
-        r = requests.post(url="http://127.0.0.1:8000/api/room/", json=post_data, headers=headers)
+        # print("post_data", post_data)
+        headers = {'content-type': 'application/json', 'Authorization': 'Token 982a27a7b299236b8aa9ee94ea7fa2458d64b2ee'}
+        r = requests.post(url="https://lambda-mud-18.herokuapp.com/api/room/", json=post_data, headers=headers)
         data = r.json()
-        print(data)
+        print("room_to_db() response: ", data)
+    
+    def unexplored(self):
+        # from mud.models import Player, Room
+        # p = Player.objects.get(name = 'player85')
+        # p.unexplored()
+        r = requests.get(url="https://lambda-mud-18.herokuapp.com/api/room/?format=json")
+        explored = r.json()
 
+        # Make a list of all the rooms from the server that we have explored
+        explored_list = []
+        for i in range(len(explored)):
+            explored_list.append(explored[i].get('room_id'))
 
+        # Remove the explored rooms from a list of all rooms
+        unexplored_list = list(range(500))
+        for j in explored_list:
+            unexplored_list.remove(j)
+
+        # Keep going to all the unexplored rooms
+        while len(unexplored_list) > 0:
+            # Perform a search for the closest unexplored room
+            next_room = self.bfs_unexplored(unexplored_list)
+            print("next room:", next_room[-1])
+
+            # Go to that room
+            self.go_to_room(next_room[-1])
+            unexplored_list.remove(next_room[-1])
+            print("unexplored_list", unexplored_list)
 
 
 class PlayerInventory(models.Model):
@@ -439,7 +484,7 @@ class Room(models.Model):
 
     def __str__(self):
         return f"{self.room_id} - {self.title} - {self.description}"
-    
+
     def getExits(self):
         exits = []
         if self.north is not None:
@@ -451,6 +496,7 @@ class Room(models.Model):
         if self.west is not None:
             exits.append("w")
         return exits
+
     def next_room(self, current_room, direction):
         """
         This function will return what the next room is given the current room and a direction.
@@ -465,64 +511,63 @@ class Room(models.Model):
             next_room = island_map[str(current_room)][1][direction]
             return str(next_room)
         except KeyError:
-            print("room does not exist in that direction")
+            # print("room does not exist in that direction")
             return None
-    
 
 
 island_map = {
-    "0": [{ "x": 60, "y": 60 }, { "n": 10, "s": 2, "e": 4, "w": 1 }],
-    "1": [{ "x": 59, "y": 60 }, { "e": 0 }],
-    "2": [{ "x": 60, "y": 59 }, { "n": 0, "s": 6, "e": 3 }],
-    "3": [{ "x": 61, "y": 59 }, { "s": 9, "e": 5, "w": 2 }],
-    "4": [{ "x": 61, "y": 60 }, { "n": 23, "e": 13, "w": 0 }],
-    "5": [{ "x": 62, "y": 59 }, { "w": 3 }],
-    "6": [{ "x": 60, "y": 58 }, { "n": 2, "w": 7 }],
-    "7": [{ "x": 59, "y": 58 }, { "n": 8, "e": 6, "w": 56 }],
-    "8": [{ "x": 59, "y": 59 }, { "s": 7, "w": 16 }],
-    "9": [{ "x": 61, "y": 58 }, { "n": 3, "s": 12, "e": 11 }],
-    "10": [{ "x": 60, "y": 61 }, { "n": 19, "s": 0, "w": 43 }],
-    "11": [{ "x": 62, "y": 58 }, { "e": 17, "w": 9 }],
-    "12": [{ "x": 61, "y": 57 }, { "n": 9, "s": 18, "e": 14, "w": 21 }],
-    "13": [{ "x": 62, "y": 60 }, { "e": 15, "w": 4 }],
-    "14": [{ "x": 62, "y": 57 }, { "s": 34, "e": 37, "w": 12 }],
-    "15": [{ "x": 63, "y": 60 }, { "w": 13 }],
-    "16": [{ "x": 58, "y": 59 }, { "n": 58, "e": 8, "w": 67 }],
-    "17": [{ "x": 63, "y": 58 }, { "n": 24, "e": 42, "w": 11 }],
-    "18": [{ "x": 61, "y": 56 }, { "n": 12, "s": 22, "w": 25 }],
-    "19": [{ "x": 60, "y": 62 }, { "n": 20, "s": 10, "w": 77 }],
-    "20": [{ "x": 60, "y": 63 }, { "n": 63, "s": 19, "e": 27, "w": 46 }],
-    "21": [{ "x": 60, "y": 57 }, { "e": 12, "w": 29 }],
-    "22": [{ "x": 61, "y": 55 }, { "n": 18, "s": 78, "w": 36 }],
-    "23": [{ "x": 61, "y": 61 }, { "s": 4, "e": 26 }],
-    "24": [{ "x": 63, "y": 59 }, { "s": 17 }],
-    "25": [{ "x": 60, "y": 56 }, { "e": 18 }],
-    "26": [{ "x": 62, "y": 61 }, { "e": 55, "w": 23 }],
-    "27": [{ "x": 61, "y": 63 }, { "n": 40, "s": 28, "e": 30, "w": 20 }],
-    "28": [{ "x": 61, "y": 62 }, { "n": 27 }],
-    "29": [{ "x": 59, "y": 57 }, { "s": 45, "e": 21, "w": 49 }],
-    "30": [{ "x": 62, "y": 63 }, { "s": 31, "e": 32, "w": 27 }],
-    "31": [{ "x": 62, "y": 62 }, { "n": 30, "e": 33 }],
-    "32": [{ "x": 63, "y": 63 }, { "n": 39, "e": 54, "w": 30 }],
-    "33": [{ "x": 63, "y": 62 }, { "e": 38, "w": 31 }],
-    "34": [{ "x": 62, "y": 56 }, { "n": 14, "s": 50, "e": 35 }],
-    "35": [{ "x": 63, "y": 56 }, { "s": 52, "w": 34 }],
-    "36": [{ "x": 60, "y": 55 }, { "s": 48, "e": 22, "w": 60 }],
-    "37": [{ "x": 63, "y": 57 }, { "w": 14 }],
-    "38": [{ "x": 64, "y": 62 }, { "s": 59, "e": 66, "w": 33 }],
-    "39": [{ "x": 63, "y": 64 }, { "n": 53, "s": 32, "e": 51, "w": 41 }],
-    "40": [{ "x": 61, "y": 64 }, { "s": 27 }],
-    "41": [{ "x": 62, "y": 64 }, { "e": 39 }],
-    "42": [{ "x": 64, "y": 58 }, { "n": 44, "s": 80, "e": 118, "w": 17 }],
-    "43": [{ "x": 59, "y": 61 }, { "e": 10, "w": 47 }],
-    "44": [{ "x": 64, "y": 59 }, { "s": 42 }],
-    "45": [{ "x": 59, "y": 56 }, { "n": 29, "s": 60 }],
-    "46": [{ "x": 59, "y": 63 }, { "e": 20, "w": 62 }],
-    "47": [{ "x": 58, "y": 61 }, { "n": 71, "e": 43 }],
-    "48": [{ "x": 60, "y": 54 }, { "n": 36, "s": 105, "w": 149 }],
-    "49": [{ "x": 58, "y": 57 }, { "s": 79, "e": 29, "w": 136 }],
-    "50": [{ "x": 62, "y": 55 }, { "n": 34, "s": 89 }],
-    "51": [{ "x": 64, "y": 64 }, { "n": 69, "e": 57, "w": 39 }],
+    "0": [{"x": 60, "y": 60 }, { "n": 10, "s": 2, "e": 4, "w": 1 }],
+    "1": [{"x": 59, "y": 60 }, { "e": 0 }],
+    "2": [{"x": 60, "y": 59 }, { "n": 0, "s": 6, "e": 3 }],
+    "3": [{"x": 61, "y": 59 }, { "s": 9, "e": 5, "w": 2 }],
+    "4": [{"x": 61, "y": 60 }, { "n": 23, "e": 13, "w": 0 }],
+    "5": [{"x": 62, "y": 59 }, { "w": 3 }],
+    "6": [{"x": 60, "y": 58 }, { "n": 2, "w": 7 }],
+    "7": [{"x": 59, "y": 58 }, { "n": 8, "e": 6, "w": 56 }],
+    "8": [{"x": 59, "y": 59 }, { "s": 7, "w": 16 }],
+    "9": [{"x": 61, "y": 58 }, { "n": 3, "s": 12, "e": 11 }],
+    "10": [{"x": 60, "y": 61 }, { "n": 19, "s": 0, "w": 43 }],
+    "11": [{"x": 62, "y": 58 }, { "e": 17, "w": 9 }],
+    "12": [{"x": 61, "y": 57 }, { "n": 9, "s": 18, "e": 14, "w": 21 }],
+    "13": [{"x": 62, "y": 60 }, { "e": 15, "w": 4 }],
+    "14": [{"x": 62, "y": 57 }, { "s": 34, "e": 37, "w": 12 }],
+    "15": [{"x": 63, "y": 60 }, { "w": 13 }],
+    "16": [{"x": 58, "y": 59 }, { "n": 58, "e": 8, "w": 67 }],
+    "17": [{"x": 63, "y": 58 }, { "n": 24, "e": 42, "w": 11 }],
+    "18": [{"x": 61, "y": 56 }, { "n": 12, "s": 22, "w": 25 }],
+    "19": [{"x": 60, "y": 62 }, { "n": 20, "s": 10, "w": 77 }],
+    "20": [{"x": 60, "y": 63 }, { "n": 63, "s": 19, "e": 27, "w": 46 }],
+    "21": [{"x": 60, "y": 57 }, { "e": 12, "w": 29 }],
+    "22": [{"x": 61, "y": 55 }, { "n": 18, "s": 78, "w": 36 }],
+    "23": [{"x": 61, "y": 61 }, { "s": 4, "e": 26 }],
+    "24": [{"x": 63, "y": 59 }, { "s": 17 }],
+    "25": [{"x": 60, "y": 56 }, { "e": 18 }],
+    "26": [{"x": 62, "y": 61 }, { "e": 55, "w": 23 }],
+    "27": [{"x": 61, "y": 63 }, { "n": 40, "s": 28, "e": 30, "w": 20 }],
+    "28": [{"x": 61, "y": 62 }, { "n": 27 }],
+    "29": [{"x": 59, "y": 57 }, { "s": 45, "e": 21, "w": 49 }],
+    "30": [{"x": 62, "y": 63 }, { "s": 31, "e": 32, "w": 27 }],
+    "31": [{"x": 62, "y": 62 }, { "n": 30, "e": 33 }],
+    "32": [{"x": 63, "y": 63 }, { "n": 39, "e": 54, "w": 30 }],
+    "33": [{"x": 63, "y": 62 }, { "e": 38, "w": 31 }],
+    "34": [{"x": 62, "y": 56 }, { "n": 14, "s": 50, "e": 35 }],
+    "35": [{"x": 63, "y": 56 }, { "s": 52, "w": 34 }],
+    "36": [{"x": 60, "y": 55 }, { "s": 48, "e": 22, "w": 60 }],
+    "37": [{"x": 63, "y": 57 }, { "w": 14 }],
+    "38": [{"x": 64, "y": 62 }, { "s": 59, "e": 66, "w": 33 }],
+    "39": [{"x": 63, "y": 64 }, { "n": 53, "s": 32, "e": 51, "w": 41 }],
+    "40": [{"x": 61, "y": 64 }, { "s": 27 }],
+    "41": [{"x": 62, "y": 64 }, { "e": 39 }],
+    "42": [{"x": 64, "y": 58 }, { "n": 44, "s": 80, "e": 118, "w": 17 }],
+    "43": [{"x": 59, "y": 61 }, { "e": 10, "w": 47 }],
+    "44": [{"x": 64, "y": 59 }, { "s": 42 }],
+    "45": [{"x": 59, "y": 56 }, { "n": 29, "s": 60 }],
+    "46": [{"x": 59, "y": 63 }, { "e": 20, "w": 62 }],
+    "47": [{"x": 58, "y": 61 }, { "n": 71, "e": 43 }],
+    "48": [{"x": 60, "y": 54 }, { "n": 36, "s": 105, "w": 149 }],
+    "49": [{"x": 58, "y": 57 }, { "s": 79, "e": 29, "w": 136 }],
+    "50": [{"x": 62, "y": 55 }, { "n": 34, "s": 89 }],
+    "51": [{"x": 64, "y": 64 }, { "n": 69, "e": 57, "w": 39 }],
     "52": [{ "x": 63, "y": 55 }, { "n": 35, "s": 68, "e": 75 }],
     "53": [{ "x": 63, "y": 65 }, { "n": 95, "s": 39, "w": 88 }],
     "54": [{ "x": 64, "y": 63 }, { "w": 32 }],
@@ -531,7 +576,7 @@ island_map = {
     "57": [{ "x": 65, "y": 64 }, { "e": 145, "w": 51 }],
     "58": [{ "x": 58, "y": 60 }, { "s": 16, "w": 65 }],
     "59": [{ "x": 64, "y": 61 }, { "n": 38, "s": 104, "e": 92 }],
-    "60": [{ "x": 59, "y": 55 }, { "n": 45, "e":37 ,"w": 70 }],
+    "60": [{ "x": 59, "y": 55 }, { "n": 45, "e":36 ,"w": 70 }],
     "61": [{ "x": 57, "y": 58 }, { "e": 56, "w": 171 }],
     "62": [{ "x": 58, "y": 63 }, { "n": 64, "e": 46, "w": 84 }],
     "63": [{ "x": 60, "y": 64 }, { "n": 72, "s": 20, "w": 73 }],
