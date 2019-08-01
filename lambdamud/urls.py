@@ -30,6 +30,7 @@ router.register(r'room', RoomViewSet)
 to_room = PlayerMethods.player_to_room
 unexplored = PlayerMethods.player_unexplored
 explore = PlayerMethods.player_explore
+mine = PlayerMethods.player_mine
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -40,5 +41,7 @@ urlpatterns = [
          unexplored),
     path('player/<str:player>/explore/<int:length>/',
          explore),
+    path('player/<str:player>/mine/',
+         mine),
     re_path(r'^api-token-auth/', views.obtain_auth_token)
 ]
