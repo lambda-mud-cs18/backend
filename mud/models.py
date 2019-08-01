@@ -13,7 +13,6 @@ class Player(models.Model):
     id = models.AutoField(primary_key=True)
     playername = models.CharField(max_length=200)
     name = models.CharField(max_length=200)
-    password = models.CharField(max_length=200)
     team_id = models.IntegerField()
     current_room = models.IntegerField()
     cooldown = models.FloatField()
@@ -26,6 +25,8 @@ class Player(models.Model):
     errors = models.CharField(max_length=1000)
     messages = models.CharField(max_length=1000)
     token = models.CharField(max_length=1000)
+    has_mined = models.BooleanField(default=False)
+    
 
     def __str__(self):
         return self.name
@@ -95,6 +96,7 @@ class Player(models.Model):
         headers = {'content-type': 'application/json', 'Authorization': 'Token ' + self.token}
         r = requests.post(url=url + "/api/adv/status/", json=post_data, headers=headers)
         data = r.json()
+
         if len(data.get('errors')) is 0:
             # To test out the function...
             # python3 manage.py shell
@@ -632,6 +634,10 @@ class PlayerMethods():
     def player_explore(self, player, length):
         p = Player.objects.get(name=player)
         p.explore(length)
+
+    def player_mine(self, player):
+        p = Player.objects.get(name=player)
+        p.mine()
 
 island_map = {
     "0": [{"x": 60, "y": 60 }, { "n": 10, "s": 2, "e": 4, "w": 1 }],
