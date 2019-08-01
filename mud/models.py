@@ -369,10 +369,10 @@ class Player(models.Model):
         return f"Now in room: {self.current_room}"
 
     def bfs(self, destination):
-        print("** bfs()")
-        self.init()
-        print("bfs() cooling down after init() for: ", self.cooldown, "seconds")
-        time.sleep(self.cooldown)
+        # print("** bfs()")
+        # self.init()
+        # print("bfs() cooling down after init() for: ", self.cooldown, "seconds")
+        # time.sleep(self.cooldown)
 
         visited = set()
         q = []
@@ -390,50 +390,6 @@ class Player(models.Model):
                     path = v.copy()
                     path.append(neighbor)
                     q.append(path)
-
-    def bfs_unexplored(self, destination):
-        print("** bfs_unexplored()")
-        self.init()
-        print("bfs_unexplored() cooling down after init() for: ", self.cooldown, "seconds")
-        time.sleep(self.cooldown)
-
-        visited = set()
-        q = []
-        q.append([self.current_room])
-        while len(q) > 0:
-            v = q.pop()
-
-            if v[-1] in destination:
-                q = []  # Reset the Queue for next time
-                return v
-
-            elif v[-1] not in visited:
-                visited.add(v[-1])
-                for neighbor in island_map[str(v[-1])][1].values():
-                    path = v.copy()
-                    path.append(neighbor)
-                    q.append(path)
-    
-    # def bfs_unexplored(self, destination):
-    #     print("bfs()")
-    #     self.init()
-    #     time.sleep(self.cooldown)
-    #     visited = set()
-    #     q = []
-    #     q.append([self.current_room])
-    #     while len(q) > 0:
-    #         v = q.pop()
-
-    #         if v[-1] in destination:
-    #             q = []  # Reset the Queue for next time
-    #             return v
-
-    #         elif v[-1] not in visited:
-    #             visited.add(v[-1])
-    #             for neighbor in island_map[str(v[-1])][1].values():
-    #                 path = v.copy()
-    #                 path.append(neighbor)
-    #                 q.append(path)
 
     def pray(self):
         """
@@ -498,25 +454,30 @@ class Player(models.Model):
         for i in range(len(explored)):
             explored_list.append(explored[i].get('room_id'))
 
-        # print("explored_list: ", explored_list)
         # Remove the explored rooms from a list of all rooms
         unexplored_list = list(range(500))
         for j in explored_list:
             # print("j", j)
             unexplored_list.remove(j)
 
+        # Do BFS on all rooms and give me the shortest_path
+        shortest_path = [0]*500
+        for k in unexplored_list:
+            new_path = self.bfs(k)
+
+            if len(new_path) < len(shortest_path):
+                shortest_path = new_path
+
         # Keep going to all the unexplored rooms
         while len(unexplored_list) > 0:
             # Perform a search for the closest unexplored room
-            next_room = self.bfs_unexplored(unexplored_list)
-            print("\nNext room:", next_room[-1])
+            print("\nNext room:", shortest_path[-1])
 
             # Go to that room
-            self.go_to_room(next_room[-1])
-            print("\n\n Made it to room: ", next_room[-1])
-            unexplored_list.remove(next_room[-1])
+            self.go_to_room(shortest_path[-1])
+            print("\n\n Made it to room: ", shortest_path[-1])
+            unexplored_list.remove(shortest_path[-1])
             print("List of unexplored rooms: ", unexplored_list)
-
 
     def proof_of_work(self, last_proof, difficulty):
         """
@@ -568,9 +529,11 @@ class Player(models.Model):
             if data.get('message') == 'New Block Forged':
                 print("Mine that LambdaCoin!")
                 print(data)
+                print("mine() cooling down: ", self.cooldown, "seconds")
                 time.sleep(self.cooldown)
             else:
                 print(data)
+                print("mine() cooling down: ", self.cooldown, "seconds")
                 time.sleep(self.cooldown)
 
 
