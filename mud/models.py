@@ -40,21 +40,24 @@ class Player(models.Model):
             inventory = status.get('inventory')
             print("Items in inventory: ", inventory)
             time.sleep(self.cooldown)
+            treasure = ['shiny treasure', 'great treasure', 'amazing treasure', 'tiny treasure']
             if inventory is not None:
                 for item in inventory:
-                    post_data = {"name": item, "confirm": "yes"}
-                    print("post_data", post_data)
-                    headers = {'content-type': 'application/json', 'Authorization': 'Token ' + self.token}
-                    r = requests.post(url=url + "/api/adv/sell/", json=post_data, headers=headers)
-                    data = r.json()
+                    # Only sell treasure
+                    if item in treasure:
+                        post_data = {"name": item, "confirm": "yes"}
+                        print("post_data", post_data)
+                        headers = {'content-type': 'application/json', 'Authorization': 'Token ' + self.token}
+                        r = requests.post(url=url + "/api/adv/sell/", json=post_data, headers=headers)
+                        data = r.json()
 
-                    # print(data)
-                    print(data.get('messages'))
-                    self.cooldown = data.get('cooldown')
-                    print("sell_inventory() ending cooling down for: ", self.cooldown, "seconds")
-                    time.sleep(self.cooldown)
+                        # print(data)
+                        print(data.get('messages'))
+                        self.cooldown = data.get('cooldown')
+                        print("sell_inventory() ending cooling down for: ", self.cooldown, "seconds")
+                        time.sleep(self.cooldown)
             else:
-                print("you have nothing in your inventory")
+                print("you have no treasure in your inventory")
         else:
             print("you need to be in room 1 to sell stuff")
             return
@@ -459,19 +462,18 @@ class Player(models.Model):
         # Remove the explored rooms from a list of all rooms
         unexplored_list = list(range(500))
         for j in explored_list:
-            # print("j", j)
             unexplored_list.remove(j)
-
-        # Do BFS on all rooms and give me the shortest_path
-        shortest_path = [0]*500
-        for k in unexplored_list:
-            new_path = self.bfs(k)
-
-            if len(new_path) < len(shortest_path):
-                shortest_path = new_path
 
         # Keep going to all the unexplored rooms
         while len(unexplored_list) > 0:
+            # Do BFS on all rooms and give me the shortest_path
+            shortest_path = [0]*500
+            for k in unexplored_list:
+                new_path = self.bfs(k)
+
+                if len(new_path) < len(shortest_path):
+                    shortest_path = new_path
+
             # Perform a search for the closest unexplored room
             print("\nNext room:", shortest_path[-1])
 
