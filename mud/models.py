@@ -241,9 +241,7 @@ class Player(models.Model):
             players = move.get('players')
             items = move.get('items')
             messages = move.get('messages')
-
-            # Add each room to the DB while exploring
-            # self.room_to_db(move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain'))
+            self.room_to_db( move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain') )
             # If there are items, GET EM!
             if len(items) > 0:
                 print("\n****************  ITEMS  *************")
@@ -285,7 +283,6 @@ class Player(models.Model):
         self.init()
         time.sleep(self.cooldown)
         print("go_to_room(): ", room)
-
         # Perform bfs to find the shortest path to the given room
         path = self.bfs(room)
         print("path: ", path)
@@ -306,15 +303,15 @@ class Player(models.Model):
                     players = move.get('players')
                     messages = move.get('messages')
                     # print("move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain')", move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain'))
-                    # self.room_to_db(move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain'))
-
+                    self.room_to_db( move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain') )
+                    
                     # If there are items, GET EM!
-                    # if len(items) > 0:
-                    #     print("\n****************  ITEMS  *************")
-                    #     print("there be items here: ", items)
-                    #     print("\n**************************************")
-                        # time.sleep(self.cooldown)
-                        # self.take()
+                    if len(items) > 0:
+                        print("\n****************  ITEMS  *************")
+                        print("there be items here: ", items)
+                        print("\n**************************************")
+                        time.sleep(self.cooldown)
+                        self.take()
 
                     # Tell me all the people in the room
                     if len(players) > 0:
@@ -358,6 +355,27 @@ class Player(models.Model):
 
     def bfs_unexplored(self, destination):
         print("bfs_unexplored()")
+        self.init()
+        time.sleep(self.cooldown)
+        visited = set()
+        q = []
+        q.append([self.current_room])
+        while len(q) > 0:
+            v = q.pop()
+
+            if v[-1] in destination:
+                q = []  # Reset the Queue for next time
+                return v
+
+            elif v[-1] not in visited:
+                visited.add(v[-1])
+                for neighbor in island_map[str(v[-1])][1].values():
+                    path = v.copy()
+                    path.append(neighbor)
+                    q.append(path)
+    
+    def bfs_unexplored(self, destination):
+        print("bfs()")
         self.init()
         time.sleep(self.cooldown)
         visited = set()
@@ -505,7 +523,6 @@ class Player(models.Model):
 
 class PlayerInventory(models.Model):
     id = models.AutoField(primary_key=True)
-
     player_id = models.IntegerField()
     item_id = models.IntegerField()
     quantity = models.IntegerField()
@@ -536,9 +553,7 @@ class Team(models.Model):
 
 class Map(models.Model):
     id = models.AutoField(primary_key=True)
-
-    def __str__(self):
-        return self.map_id
+    name = models.CharField(max_length=200)
 
 
 class Room(models.Model):
@@ -587,6 +602,20 @@ class Room(models.Model):
             # print("room does not exist in that direction")
             return None
 
+
+class PlayerMethods():
+
+    def player_to_room(self, player, room):
+        p = Player.objects.get(name=player)
+        p.go_to_room(room)
+
+    def player_unexplored(self, player):
+        p = Player.objects.get(name=player)
+        p.unexplored()
+
+    def player_explore(self, player, length):
+        p = Player.objects.get(name=player)
+        p.explore(length)
 
 island_map = {
     "0": [{"x": 60, "y": 60 }, { "n": 10, "s": 2, "e": 4, "w": 1 }],
