@@ -18,6 +18,7 @@ psycopg2-binary = "*"
 whitenoise = "*"
 django-cors-headers = "*"
 psycopg2 = "*"
+hashlib = "*"
 
 [requires]
 python_version = "3.7"

@@ -31,7 +31,6 @@ to_room = PlayerMethods.player_to_room
 unexplored = PlayerMethods.player_unexplored
 explore = PlayerMethods.player_explore
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
