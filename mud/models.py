@@ -62,10 +62,11 @@ class Player(models.Model):
         """
         Function to pickup every item in the current room
         """
-        print("take() function")
+        print("** take() function")
         room = self.init()
         items = room.get('items')
         print("Grabbing items: ", items)
+        print("take() cooling down after init() for: ", self.cooldown, "seconds")
         time.sleep(self.cooldown)
         if items is not None:
             # If there are multiple items in the room, pick them all up
@@ -89,7 +90,7 @@ class Player(models.Model):
         Function to get the player status
         https://lambda-treasure-hunt.herokuapp.com/api/adv/status/
         """
-        print("get_status() function")
+        print("** get_status() function")
         post_data = {}
         headers = {'content-type': 'application/json', 'Authorization': 'Token ' + self.token}
         r = requests.post(url=url + "/api/adv/status/", json=post_data, headers=headers)
@@ -117,7 +118,7 @@ class Player(models.Model):
             # There was an error
             self.cooldown = data.get('cooldown')
             print("get_status error: ", data)
-            print("cool down for: ", data.get('cooldown'))
+            print("get_status() error: cool down for: ", data.get('cooldown'))
             time.sleep(self.cooldown)
             return data
 
@@ -126,7 +127,7 @@ class Player(models.Model):
         Function to get the player info
         https://lambda-treasure-hunt.herokuapp.com/api/adv/init/
         """
-        print("init() function")
+        print("** init() function")
         post_data = {}
         headers = {'content-type': 'application/json', 'Authorization': 'Token ' + self.token}
         r = requests.get(url=url + "/api/adv/init/", json=post_data, headers=headers)
@@ -157,12 +158,35 @@ class Player(models.Model):
         Function to move a player a single space
         Takes: direction
         https://lambda-treasure-hunt.herokuapp.com/api/adv/move/
+
+        from mud.models import Player, Room
+        p = Player.objects.get(name = 'brooks')
+        p.move("s")
         """
+        print("** move() function")
         self.get_status()
+        print("move() sleeping after get_status() for: ",  self.cooldown)
         time.sleep(self.cooldown)
-        print("move() function")
         print("current room: ", self.current_room, "direction: ", direction)
         next_room_id = Room().next_room(self.current_room, direction)
+        print("next_room_id", next_room_id)
+        fly_or_move = "/api/adv/move/"
+
+        # Function to choose if we fly to the next room or move
+        # We cannot fly when heavly encumbered
+        if self.encumbrance <= 10:
+            # We need to get the room infor for the next room from our DB
+            r = requests.get(url="https://lambda-mud-18.herokuapp.com/api/room/?format=json")
+            explored = r.json()
+            for i in range(len(explored)):
+                if int(explored[i].get('room_id')) == int(next_room_id):
+                    # We need to see if the elevation for the next room is > 0
+                    # If so, then we need to fly not move
+                    if explored[i].get('elevation') > 0:
+                        print("elevation: ", explored[i].get('elevation'))
+                        fly_or_move = "/api/adv/fly/"
+
+        print("fly_or_move", fly_or_move)
 
         # if next_room_id is not None:
         post_data = {
@@ -174,14 +198,15 @@ class Player(models.Model):
         #     return
 
         headers = {'content-type': 'application/json', 'Authorization': 'Token ' + self.token}
-        r = requests.post(url=url + "/api/adv/move/", json=post_data, headers=headers)
+        r = requests.post(url=url + fly_or_move, json=post_data, headers=headers)
         data = r.json()
+        print("data", data)
 
         if len(data.get('errors')) is 0:
             # To test out the function...
             # python3 manage.py shell
             # from mud.models import Player, Room
-            # p = Player.objects.get(name = 'player85')
+            # p = Player.objects.get(name = 'brooks')
             # p.move("e")
 
             self.current_room = data.get('room_id')
@@ -202,12 +227,14 @@ class Player(models.Model):
         """
         Randomly explore the island the number of turns passed in
         """
-        print("explore() function")
+        print("** explore() function")
         self.get_status()
+        print("explore() cooling down after first get_status() for: ", self.cooldown, "seconds")
         time.sleep(self.cooldown)
 
         init = self.init()
         self.cooldown = init.get('cooldown')
+        print("explore() cooling down after init() for: ", self.cooldown, "seconds")
         time.sleep(self.cooldown)
         exits = init.get('exits')
 
@@ -216,6 +243,7 @@ class Player(models.Model):
             # look if encumbered
             status = self.get_status()
             encumbrance = status.get('encumbrance')
+            print("explore() cooling down after second get_status() for: ", self.cooldown, "seconds")
             time.sleep(status.get('cooldown'))
             if encumbrance >= 9:
                 print("/n/nEncumbered, going to sell inventory")
@@ -241,12 +269,13 @@ class Player(models.Model):
             players = move.get('players')
             items = move.get('items')
             messages = move.get('messages')
-            self.room_to_db( move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain') )
+            # self.room_to_db( move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain') )
             # If there are items, GET EM!
             if len(items) > 0:
                 print("\n****************  ITEMS  *************")
                 print("there be items here: ", items)
                 print("\n**************************************")
+                print("explore() cooling down before take() for: ", self.cooldown, "seconds")
                 time.sleep(self.cooldown)
                 self.take()
 
@@ -264,7 +293,7 @@ class Player(models.Model):
                 print(messages)
                 print("\n**************************************")
 
-            print("explore() cooling down for: ", move.get('cooldown'), "seconds")
+            print("explore() last cooling down for: ", move.get('cooldown'), "seconds")
             time.sleep(self.cooldown)
             i += 1
 
@@ -274,15 +303,21 @@ class Player(models.Model):
         Will stop and pick up treasure along the way.
         Will print a list of peole in each room and any important messages.
         Takes: Destination room
+        
+        from mud.models import Player, Room
+        p = Player.objects.get(name = 'brooks')
+        p = Player.objects.get(name = 'Rory')
+        p = Player.objects.get(name = 'JaRule')
+        p.go_to_room(1)
         """
-        # from mud.models import Player, Room
-        # p = Player.objects.get(name = 'brooks')
-        # p.go_to_room(1)
+        print("** go_to_room(): ", room)
         self.get_status()
+        print("go_to_room() cooling down after get_status() for: ", self.cooldown, "seconds")
         time.sleep(self.cooldown)
+
         self.init()
+        print("go_to_room() cooling down after init() for: ", self.cooldown, "seconds")
         time.sleep(self.cooldown)
-        print("go_to_room(): ", room)
         # Perform bfs to find the shortest path to the given room
         path = self.bfs(room)
         print("path: ", path)
@@ -298,18 +333,21 @@ class Player(models.Model):
                     print("\nTRAVELING:", exits)
                     move = self.move(exits)
                     self.cooldown = move.get('cooldown')
+                    print("go_to_room() cooling down after move() for: ", move.get('cooldown'), "seconds")
+                    time.sleep(self.cooldown)
                     print(move)
                     items = move.get('items')
                     players = move.get('players')
                     messages = move.get('messages')
                     # print("move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain')", move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain'))
-                    self.room_to_db( move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain') )
+                    # self.room_to_db(move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain') )
                     
                     # If there are items, GET EM!
                     if len(items) > 0:
                         print("\n****************  ITEMS  *************")
                         print("there be items here: ", items)
                         print("\n**************************************")
+                        print("go_to_room() cooling down before take() for: ", self.cooldown, "seconds")
                         time.sleep(self.cooldown)
                         self.take()
 
@@ -318,24 +356,24 @@ class Player(models.Model):
                         print("\nthere be other players here")
                         for person in players:
                             print("person:", person)
-                            if person is "Pirate Ry":
-                                print("****************PIRATE*************")
-                                return move
-                    # Temm me any important messages
+
+                    # Tell me any important messages
                     if len(messages) > 2:
                         print("\n*********IMPORTANT MESSAGES************")
                         print(messages)
-                        print("\n**************************************")
+                        print("\n***************************************")
 
-                    print("go_to_room() cooling down for: ", move.get('cooldown'), "seconds")
-                    time.sleep(self.cooldown)
+                    # print("go_to_room() cooling down for: ", move.get('cooldown'), "seconds")
+                    # time.sleep(self.cooldown)
 
         return f"Now in room: {self.current_room}"
 
     def bfs(self, destination):
-        print("bfs()")
+        print("** bfs()")
         self.init()
+        print("bfs() cooling down after init() for: ", self.cooldown, "seconds")
         time.sleep(self.cooldown)
+
         visited = set()
         q = []
         q.append([self.current_room])
@@ -354,9 +392,11 @@ class Player(models.Model):
                     q.append(path)
 
     def bfs_unexplored(self, destination):
-        print("bfs_unexplored()")
+        print("** bfs_unexplored()")
         self.init()
+        print("bfs_unexplored() cooling down after init() for: ", self.cooldown, "seconds")
         time.sleep(self.cooldown)
+
         visited = set()
         q = []
         q.append([self.current_room])
@@ -374,26 +414,26 @@ class Player(models.Model):
                     path.append(neighbor)
                     q.append(path)
     
-    def bfs_unexplored(self, destination):
-        print("bfs()")
-        self.init()
-        time.sleep(self.cooldown)
-        visited = set()
-        q = []
-        q.append([self.current_room])
-        while len(q) > 0:
-            v = q.pop()
+    # def bfs_unexplored(self, destination):
+    #     print("bfs()")
+    #     self.init()
+    #     time.sleep(self.cooldown)
+    #     visited = set()
+    #     q = []
+    #     q.append([self.current_room])
+    #     while len(q) > 0:
+    #         v = q.pop()
 
-            if v[-1] in destination:
-                q = []  # Reset the Queue for next time
-                return v
+    #         if v[-1] in destination:
+    #             q = []  # Reset the Queue for next time
+    #             return v
 
-            elif v[-1] not in visited:
-                visited.add(v[-1])
-                for neighbor in island_map[str(v[-1])][1].values():
-                    path = v.copy()
-                    path.append(neighbor)
-                    q.append(path)
+    #         elif v[-1] not in visited:
+    #             visited.add(v[-1])
+    #             for neighbor in island_map[str(v[-1])][1].values():
+    #                 path = v.copy()
+    #                 path.append(neighbor)
+    #                 q.append(path)
 
     def pray(self):
         """
@@ -408,7 +448,7 @@ class Player(models.Model):
         print(data)
 
     def room_to_db(self, room_id, title, description, coordinates, elevation, terrain):
-        print("room_to_db()")
+        print("** room_to_db()")
         north = Room().next_room(room_id, 'n')
         south = Room().next_room(room_id, 's')
         east = Room().next_room(room_id, 'e')
@@ -427,17 +467,28 @@ class Player(models.Model):
             "east": str(east),
             "west": str(west)
         }
-        # print("post_data", post_data)
+
         headers = {'content-type': 'application/json', 'Authorization': 'Token 982a27a7b299236b8aa9ee94ea7fa2458d64b2ee'}
         r = requests.post(url="https://lambda-mud-18.herokuapp.com/api/room/", json=post_data, headers=headers)
         data = r.json()
-        print("room_to_db() response: ", data)
+
+        room_id = data.get('room_id')
+        if room_id == ['room with this room id already exists.']:
+            pass
+        else:
+            print("New room added to DB: ", data)
     
     def unexplored(self):
-        # from mud.models import Player, Room
-        # p = Player.objects.get(name = 'brooks')
-        # p.unexplored()
+        """
+        Function to explore the unexplored parts of the map
+
+        from mud.models import Player, Room
+        p = Player.objects.get(name = 'brooks')
+        p.unexplored()
+        """
+        print("\n** unexplored()")
         self.get_status()
+        print("unexplored() cooling down after get_status() for: ", self.cooldown, "seconds")
         time.sleep(self.cooldown)
 
         r = requests.get(url="https://lambda-mud-18.herokuapp.com/api/room/?format=json")
@@ -458,12 +509,14 @@ class Player(models.Model):
         while len(unexplored_list) > 0:
             # Perform a search for the closest unexplored room
             next_room = self.bfs_unexplored(unexplored_list)
-            print("next room:", next_room[-1])
+            print("\nNext room:", next_room[-1])
 
             # Go to that room
             self.go_to_room(next_room[-1])
+            print("\n\n Made it to room: ", next_room[-1])
             unexplored_list.remove(next_room[-1])
-            print("unexplored_list", unexplored_list)
+            print("List of unexplored rooms: ", unexplored_list)
+
 
     def proof_of_work(self, last_proof, difficulty):
         """
