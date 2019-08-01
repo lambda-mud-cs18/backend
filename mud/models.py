@@ -4,6 +4,7 @@ import requests
 import json
 import time
 import random
+import hashlib
 
 url = "https://lambda-treasure-hunt.herokuapp.com"
 
@@ -97,7 +98,7 @@ class Player(models.Model):
             # To test out the function...
             # python3 manage.py shell
             # from mud.models import Player
-            # p = Player.objects.get(name = 'player85')
+            # p = Player.objects.get(name = 'brooks')
             # p.get_status()
 
             self.name = data.get('name')
@@ -115,7 +116,9 @@ class Player(models.Model):
         else:
             # There was an error
             self.cooldown = data.get('cooldown')
-            print(data.get('cooldown'))
+            print("get_status error: ", data)
+            print("cool down for: ", data.get('cooldown'))
+            time.sleep(self.cooldown)
             return data
 
     def init(self):
@@ -139,11 +142,14 @@ class Player(models.Model):
             self.cooldown = data.get('cooldown')
             self.errors = data.get('errors')
             self.messages = data.get('messages')
+            time.sleep(self.cooldown)
             return data
         else:
             # There was an error
-            print("init() errors")
+            print("init() error: ", data)
             self.cooldown = data.get('cooldown')
+            print("cool down for: ", self.cooldown)
+            time.sleep(self.cooldown)
             return data
 
     def move(self, direction):
@@ -152,6 +158,8 @@ class Player(models.Model):
         Takes: direction
         https://lambda-treasure-hunt.herokuapp.com/api/adv/move/
         """
+        self.get_status()
+        time.sleep(self.cooldown)
         print("move() function")
         print("current room: ", self.current_room, "direction: ", direction)
         next_room_id = Room().next_room(self.current_room, direction)
@@ -195,6 +203,8 @@ class Player(models.Model):
         Randomly explore the island the number of turns passed in
         """
         print("explore() function")
+        self.get_status()
+        time.sleep(self.cooldown)
 
         init = self.init()
         self.cooldown = init.get('cooldown')
@@ -268,8 +278,12 @@ class Player(models.Model):
         Takes: Destination room
         """
         # from mud.models import Player, Room
-        # p = Player.objects.get(name = 'player85')
+        # p = Player.objects.get(name = 'brooks')
         # p.go_to_room(1)
+        self.get_status()
+        time.sleep(self.cooldown)
+        self.init()
+        time.sleep(self.cooldown)
         print("go_to_room(): ", room)
 
         # Perform bfs to find the shortest path to the given room
@@ -295,12 +309,12 @@ class Player(models.Model):
                     # self.room_to_db(move.get('room_id'), move.get('title'), move.get('description'), move.get('coordinates'), move.get('elevation'), move.get('terrain'))
 
                     # If there are items, GET EM!
-                    if len(items) > 0:
-                        print("\n****************  ITEMS  *************")
-                        print("there be items here: ", items)
-                        print("\n**************************************")
-                        time.sleep(self.cooldown)
-                        self.take()
+                    # if len(items) > 0:
+                    #     print("\n****************  ITEMS  *************")
+                    #     print("there be items here: ", items)
+                    #     print("\n**************************************")
+                        # time.sleep(self.cooldown)
+                        # self.take()
 
                     # Tell me all the people in the room
                     if len(players) > 0:
@@ -343,7 +357,7 @@ class Player(models.Model):
                     q.append(path)
 
     def bfs_unexplored(self, destination):
-        print("bfs()")
+        print("bfs_unexplored()")
         self.init()
         time.sleep(self.cooldown)
         visited = set()
@@ -403,19 +417,23 @@ class Player(models.Model):
     
     def unexplored(self):
         # from mud.models import Player, Room
-        # p = Player.objects.get(name = 'player85')
+        # p = Player.objects.get(name = 'brooks')
         # p.unexplored()
+        self.get_status()
+        time.sleep(self.cooldown)
+
         r = requests.get(url="https://lambda-mud-18.herokuapp.com/api/room/?format=json")
         explored = r.json()
-
         # Make a list of all the rooms from the server that we have explored
         explored_list = []
         for i in range(len(explored)):
             explored_list.append(explored[i].get('room_id'))
 
+        # print("explored_list: ", explored_list)
         # Remove the explored rooms from a list of all rooms
         unexplored_list = list(range(500))
         for j in explored_list:
+            # print("j", j)
             unexplored_list.remove(j)
 
         # Keep going to all the unexplored rooms
@@ -428,6 +446,61 @@ class Player(models.Model):
             self.go_to_room(next_room[-1])
             unexplored_list.remove(next_room[-1])
             print("unexplored_list", unexplored_list)
+
+    def proof_of_work(self, last_proof, difficulty):
+        """
+        Simple Proof of Work Algorithm
+        """
+
+        print("Searching for next proof")
+        proof = 0
+        while self.valid_proof(last_proof, proof, difficulty) is False:
+            proof += 1
+
+        print("Proof found: " + str(proof))
+        return proof
+
+    def valid_proof(self, last_proof, proof, difficulty):
+        """
+        Validates the Proof:  Does hash(last_proof, proof) contain 6
+        leading zeroes?
+        hashlib.sha256(guess).hexdigest()
+        """
+        guess = f'{last_proof}{proof}'.encode()
+        guess_hash = hashlib.sha256(guess).hexdigest()
+        listofzeros = [0] * difficulty
+        listofzeros = ''.join(str(e) for e in listofzeros)
+        # print("guess_hash[:difficulty]", guess_hash[:difficulty])
+        # print("listofzeros", listofzeros)
+
+        return guess_hash[:difficulty] == listofzeros
+
+    def mine(self):
+        # from mud.models import Player, Room
+        # p = Player.objects.get(name = 'brooks')
+        # p.mine()
+        node = "https://lambda-treasure-hunt.herokuapp.com/api/bc"
+        while True:
+            
+            # Get the last proof from the server
+            headers = {'content-type': 'application/json', 'Authorization': 'Token ' + self.token}
+            r = requests.get(url=node + "/last_proof", headers=headers)
+            data = r.json()
+            print(data)
+
+            new_proof = self.proof_of_work(data.get('proof'), data.get('difficulty'))
+
+            post_data = {"proof": new_proof}
+            r = requests.post(url=node + "/mine/", json=post_data, headers=headers)
+            data = r.json()
+            self.cooldown = data.get('cooldown')
+            if data.get('message') == 'New Block Forged':
+                print("Mine that LambdaCoin!")
+                print(data)
+                time.sleep(self.cooldown)
+            else:
+                print(data)
+                time.sleep(self.cooldown)
 
 
 class PlayerInventory(models.Model):

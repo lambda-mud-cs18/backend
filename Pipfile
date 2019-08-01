@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 autopep8 = "*"
+pep8 = "*"
 
 [packages]
 django = "*"
@@ -18,6 +19,7 @@ psycopg2-binary = "*"
 whitenoise = "*"
 django-cors-headers = "*"
 psycopg2 = "*"
+hashlib = "*"
 
 [requires]
 python_version = "3.7"
