@@ -125,14 +125,11 @@ class Player(models.Model):
                 "token": self.token,
                 "has_mined": self.has_mined
             }
-            
-            print("PUT DATA", put_data)
 
             headers = {'content-type': 'application/json', 'Authorization': 'Token 982a27a7b299236b8aa9ee94ea7fa2458d64b2ee'}
             r = requests.put(
                 f'https://lambda-mud-18.herokuapp.com/api/player/{self.id}/', json=put_data, headers=headers)
 
-            print("****************", r.json)
             self.name = data.get('name')
             self.cooldown = data.get('cooldown')
             self.encumbrance = data.get('encumbrance')
