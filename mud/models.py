@@ -115,8 +115,8 @@ class Player(models.Model):
             "errors": data.get('errors'), "messages": data.get('messages'), "token": self.token, 
             "has_mined": data.get('has_mined') }
             
-            headers = {'content-type': 'application/json', 'Authorization': 'Token ' + self.token}
-            r = requests.put(url=url + f'/api/player/{self.id}/', json=post_data, headers=headers)
+            headers = {'content-type': 'application/json', 'Authorization': 'Token 982a27a7b299236b8aa9ee94ea7fa2458d64b2ee'}
+            r = requests.put(url=url + f'/api/player/{self.id}/', json=put_data, headers=headers)
 
             self.name = data.get('name')
             self.cooldown = data.get('cooldown')
