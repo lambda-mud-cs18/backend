@@ -27,7 +27,6 @@ class Player(models.Model):
     token = models.CharField(max_length=1000)
     has_mined = models.BooleanField(default=False)
     
-
     def __str__(self):
         return self.name
 
@@ -106,6 +105,18 @@ class Player(models.Model):
             # from mud.models import Player
             # p = Player.objects.get(name = 'brooks')
             # p.get_status()
+
+            # Update database fields for the player
+
+            put_data = {"playername": self.playername, "name": data.get('name'), 
+            "team_id": self.team_id, "current_room": self.current_room, "cooldown": data.get('cooldown'), 
+            "encumbrance": data.get('encumbrance'), "strength": data.get('strength'), "speed": data.get('speed'), 
+            "gold": data.get('gold'), "inventory": data.get('inventory'), "status": data.get('status'), 
+            "errors": data.get('errors'), "messages": data.get('messages'), "token": self.token, 
+            "has_mined": data.get('has_mined') }
+            
+            headers = {'content-type': 'application/json', 'Authorization': 'Token ' + self.token}
+            r = requests.put(url=url + f'/api/player/{self.id}/', json=post_data, headers=headers)
 
             self.name = data.get('name')
             self.cooldown = data.get('cooldown')
