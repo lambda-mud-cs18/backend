@@ -108,15 +108,27 @@ class Player(models.Model):
 
             # Update database fields for the player
 
-            put_data = {"playername": self.playername, "name": data.get('name'), 
-            "team_id": self.team_id, "current_room": self.current_room, "cooldown": data.get('cooldown'), 
-            "encumbrance": data.get('encumbrance'), "strength": data.get('strength'), "speed": data.get('speed'), 
-            "gold": data.get('gold'), "inventory": data.get('inventory'), "status": data.get('status'), 
-            "errors": data.get('errors'), "messages": data.get('messages'), "token": self.token, 
-            "has_mined": data.get('has_mined') }
-            
-            headers = {'content-type': 'application/json', 'Authorization': 'Token ' + self.token}
-            r = requests.put(url=url + f'/api/player/{self.id}/', json=post_data, headers=headers)
+            put_data = {
+                "playername": self.playername,
+                "name": data.get('name'),
+                "team_id": self.team_id,
+                "cooldown": data.get('cooldown'),
+                "current_room": self.current_room,
+                "encumbrance": data.get('encumbrance'),
+                "strength": data.get('strength'),
+                "speed": data.get('speed'),
+                "gold": data.get('gold'),
+                "inventory": f"{data.get('inventory')}",
+                "status": f"{data.get('status')}",
+                "errors": f"{data.get('errors')}",
+                "messages": f"{data.get('messages')}",
+                "token": self.token,
+                "has_mined": self.has_mined
+            }
+
+            headers = {'content-type': 'application/json', 'Authorization': 'Token 982a27a7b299236b8aa9ee94ea7fa2458d64b2ee'}
+            r = requests.put(
+                f'https://lambda-mud-18.herokuapp.com/api/player/{self.id}/', json=put_data, headers=headers)
 
             self.name = data.get('name')
             self.cooldown = data.get('cooldown')
