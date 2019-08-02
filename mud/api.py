@@ -9,9 +9,9 @@ class PlayerSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Player
-        fields = ('id', 'playername', 'name', 'password', 'team_id', 'current_room',
+        fields = ('id', 'playername', 'name', 'team_id', 'current_room',
                   'cooldown', 'encumbrance', 'strength', 'speed', 'gold',
-                  'inventory', 'status', 'errors', 'messages', 'token')
+                  'inventory', 'status', 'errors', 'messages', 'token', 'has_mined')
 
 
 class PlayerViewSet(viewsets.ModelViewSet):
